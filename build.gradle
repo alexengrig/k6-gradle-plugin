@@ -1,0 +1,146 @@
+plugins {
+    id 'com.gradle.plugin-publish'
+    id 'org.unbroken-dome.test-sets'
+    id 'jacoco'
+}
+
+group = 'io.github.alexengrig.gradle'
+version = "${projectVersion}"
+description = 'Gradle Plugin with k6 (a load testing tool).'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+javadoc { options.encoding = 'UTF-8' }
+
+jar {
+    manifest {
+        attributes(
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': 'Alexengrig Dev.'
+        )
+    }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5Version}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5Version}"
+
+    testImplementation "org.assertj:assertj-core:${assertJVersion}"
+
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+}
+
+testSets {
+    functionalTest
+    integrationTest
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    check.dependsOn it
+}
+
+jacoco { toolVersion = "${jacocoToolVersion}" }
+
+jacocoTestReport.dependsOn test
+jacocoIntegrationTestReport.dependsOn integrationTest
+jacocoFunctionalTestReport.dependsOn functionalTest
+
+tasks.register('jacocoAllTestsReport', JacocoReport) {
+    group = JavaBasePlugin.VERIFICATION_GROUP
+    description = 'Generates code coverage report for the all tests.'
+    sourceSets(project.sourceSets.main)
+    final def testTasks = tasks.withType(Test).toArray(Task[]::new)
+    executionData(testTasks)
+    dependsOn testTasks
+    jacocoTestCoverageVerification.dependsOn it
+}
+
+tasks.withType(JacocoReport).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0
+            }
+        }
+    }
+    check.dependsOn it
+}
+
+gradlePlugin {
+    plugins {
+        springBannerPlugin {
+            id = 'io.github.alexengrig.k6'
+            displayName = "${projectName}"
+            description = "Runner of k6."
+            implementationClass = 'io.github.alexengrig.gradle.k6.K6Plugin'
+        }
+    }
+    testSourceSets(sourceSets.functionalTest, sourceSets.integrationTest)
+}
+
+pluginBundle {
+    website = "${projectGithubUrl}"
+    vcsUrl = "${projectGithubUrl}"
+    tags = ['grafana', 'k6', 'test', 'load', 'performance']
+}
+
+publishing {
+    publications.withType(MavenPublication).configureEach {
+        pom {
+            name = "${projectName}"
+            url = "${projectGithubUrl}"
+            licenses {
+                license {
+                    name = 'Apache License, Version 2.0'
+                    url = 'https://www.apache.org/licenses/LICENSE-2.0'
+                    distribution = 'repo'
+                }
+            }
+            developers {
+                developer {
+                    id = 'alexengrig'
+                    name = 'Grig Alex'
+                    email = 'alexengrigdev@gmail.com'
+                }
+            }
+            issueManagement {
+                url = "${projectGithubUrl}/issues"
+                system = 'GitHub Issues'
+            }
+            ciManagement {
+                url = "${projectGithubUrl}/actions"
+                system = 'GitHub Actions'
+            }
+            scm {
+                connection = "scm:git:${projectGithubUrl}.git"
+                developerConnection = "scm:git:${projectGithubUrl}.git"
+                url = "${projectGithubUrl}"
+            }
+        }
+    }
+    afterEvaluate {
+        publications.named('pluginMaven') {
+            pom {
+                description = project.description
+            }
+        }
+    }
+}

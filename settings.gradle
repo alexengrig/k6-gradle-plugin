@@ -1,0 +1,8 @@
+pluginManagement {
+    plugins {
+        id 'com.gradle.plugin-publish' version "${gradlePublishPluginVersion}"
+        id 'org.unbroken-dome.test-sets' version "${testSetsPluginVersion}"
+    }
+}
+
+rootProject.name = 'k6-gradle-plugin'
