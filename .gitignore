@@ -1,3 +1,8 @@
 .idea/
 .gradle/
 build/
+spring-boot-demo/.gradle/
+spring-boot-demo/build/
+spring-boot-demo/gradle/
+spring-boot-demo/gradlew
+spring-boot-demo/gradlew.bat
