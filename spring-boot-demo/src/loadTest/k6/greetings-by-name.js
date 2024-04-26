@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-package io.github.alexengrig.gradle.k6;
+import http from 'k6/http'
+import { sleep } from 'k6'
 
-import org.gradle.api.Project;
-import org.gradle.api.plugins.ExtensionContainer;
+export const options = {
+  vus: 10,
+  duration: '10s',
+}
 
-/**
- * @since 0.1.0
- */
-public interface K6Extension {
-
-    /**
-     * @since 0.1.0
-     */
-    String NAME = "k6";
-
-    /**
-     * @since 0.1.0
-     */
-    static K6Extension create(Project project) {
-        ExtensionContainer extensions = project.getExtensions();
-        return extensions.create(NAME, K6Extension.class);
-    }
-
+export default function() {
+  http.get('http://localhost:8080/greetings?name=Gradle')
+  sleep(1)
 }

@@ -14,27 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.alexengrig.gradle.k6;
-
-import org.gradle.api.Project;
-import org.gradle.api.plugins.ExtensionContainer;
-
 /**
  * @since 0.1.0
  */
-public interface K6Extension {
+@NonNullApi
+package io.github.alexengrig.gradle.k6.task;
 
-    /**
-     * @since 0.1.0
-     */
-    String NAME = "k6";
-
-    /**
-     * @since 0.1.0
-     */
-    static K6Extension create(Project project) {
-        ExtensionContainer extensions = project.getExtensions();
-        return extensions.create(NAME, K6Extension.class);
-    }
-
-}
+import org.gradle.api.NonNullApi;
